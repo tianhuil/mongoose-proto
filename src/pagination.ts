@@ -64,18 +64,20 @@ const runPaginationDemo = async () => {
     console.log('Connected to MongoDB');
 
     // Create 10 blog posts with slight delays to ensure different timestamps
-    const blogPosts = [];
     for (let i = 0; i < 10; i++) {
-      const post = await createBlog({
+      await createBlog({
         title: `Blog Post ${i + 1}`,
         content: `This is the content for blog post ${i + 1}. It contains enough characters to meet the minimum requirement.`,
         tags: [`tag${i + 1}`, 'common'],
       });
-      blogPosts.push(post);
       // Small delay to ensure different timestamps
       await new Promise((resolve) => setTimeout(resolve, 100));
     }
-    console.log('\nCreated 10 Blog Posts');
+
+    console.log(
+      '\nCreated %d Blog Posts',
+      (await listBlogsWithCursor(null, 10)).items.length,
+    );
 
     // Demonstrate cursor-based pagination
     let currentCursor: string | null = null;
