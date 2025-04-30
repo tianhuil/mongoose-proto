@@ -113,6 +113,10 @@ const runDemo = async () => {
     // List only published posts
     const publishedPosts = await listPosts({ published: true });
     console.log('\nPublished Posts Count:', publishedPosts.length);
+
+    // Clean up collections
+    await Promise.all([Author.deleteMany({}), Post.deleteMany({})]);
+    console.log('\nCleared all collections');
   } catch (error) {
     console.error('Error in demo:', error);
   } finally {
