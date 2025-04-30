@@ -19,16 +19,41 @@ export const Blog = mongoose.model('Blog', blogSchema);
 // Type definition
 export type BlogType = z.infer<typeof ZBlog>;
 
+interface PaginationResult {
+  items: BlogType[];
+  nextCursor: string | null;
+}
+
 // Blog functions
 export const createBlog = (blogData: Omit<BlogType, 'createdAt'>) =>
   Blog.create(blogData);
 
-export const listBlogsWithPagination = (page: number, limit = 2) =>
-  Blog.find()
+export const listBlogsWithCursor = async (
+  cursor: string | null = null,
+  limit = 2,
+): Promise<PaginationResult> => {
+  const query = cursor
+    ? {
+        createdAt: { $lt: new Date(cursor) },
+      }
+    : {};
+
+  const items = await Blog.find(query)
     .sort({ createdAt: -1 })
-    .skip((page - 1) * limit)
-    .limit(limit)
-    .select('-__v');
+    .limit(limit + 1)
+    .select('-__v')
+    .lean();
+
+  const hasMore = items.length > limit;
+  const paginatedItems = hasMore ? items.slice(0, -1) : items;
+
+  return {
+    items: paginatedItems,
+    nextCursor: hasMore
+      ? items[items.length - 2].createdAt.toISOString()
+      : null,
+  };
+};
 
 // Demo/test code
 const runPaginationDemo = async () => {
@@ -38,30 +63,38 @@ const runPaginationDemo = async () => {
     await mongoose.connect(mongoUrl);
     console.log('Connected to MongoDB');
 
-    // Create 10 blog posts
-    const blogPosts = await Promise.all(
-      Array.from({ length: 10 }, (_, i) =>
-        createBlog({
-          title: `Blog Post ${i + 1}`,
-          content: `This is the content for blog post ${i + 1}. It contains enough characters to meet the minimum requirement.`,
-          tags: [`tag${i + 1}`, 'common'],
-        }),
-      ),
-    );
+    // Create 10 blog posts with slight delays to ensure different timestamps
+    const blogPosts = [];
+    for (let i = 0; i < 10; i++) {
+      const post = await createBlog({
+        title: `Blog Post ${i + 1}`,
+        content: `This is the content for blog post ${i + 1}. It contains enough characters to meet the minimum requirement.`,
+        tags: [`tag${i + 1}`, 'common'],
+      });
+      blogPosts.push(post);
+      // Small delay to ensure different timestamps
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    }
     console.log('\nCreated 10 Blog Posts');
 
-    // Demonstrate pagination
-    for (let page = 1; page <= 5; page++) {
-      const paginatedPosts = await listBlogsWithPagination(page, 2);
-      console.log(`\nPage ${page} (2 items per page):`);
+    // Demonstrate cursor-based pagination
+    let currentCursor: string | null = null;
+    let pageNum = 1;
+
+    do {
+      const { items, nextCursor } = await listBlogsWithCursor(currentCursor);
+      console.log(`\nPage ${pageNum} (2 items per page):`);
       console.log(
         JSON.stringify(
-          paginatedPosts.map((post) => post.title),
+          items.map((post) => post.title),
           null,
           2,
         ),
       );
-    }
+
+      currentCursor = nextCursor;
+      pageNum++;
+    } while (currentCursor !== null);
 
     // Clean up collection
     await Blog.deleteMany({});
