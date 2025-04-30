@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { extendZod, zodSchema } from '@zodyac/zod-mongoose';
+import { extendZod, zId, zodSchema } from '@zodyac/zod-mongoose';
 import mongoose, { type InferSchemaType } from 'mongoose';
 import mongoosePaginate from 'mongoose-paginate-v2';
 
@@ -7,10 +7,18 @@ extendZod(z);
 
 // Schema Definition
 const ZBlog = z.object({
+  _id: zId().optional(),
+  createdAt: z
+    .date()
+    .default(() => new Date())
+    .optional(),
+  updatedAt: z
+    .date()
+    .default(() => new Date())
+    .optional(),
   title: z.string().min(3).max(255),
   content: z.string().min(10),
   tags: z.array(z.string()).default([]),
-  createdAt: z.date().default(() => new Date()),
 });
 
 // Type definition
