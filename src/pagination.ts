@@ -1,8 +1,12 @@
 import { z } from 'zod';
 import { extendZod, zodSchema } from '@zodyac/zod-mongoose';
 import mongoose from 'mongoose';
+import { mongoosePlugin } from 'mongo-cursor-pagination';
 
 extendZod(z);
+
+// Add pagination plugin to mongoose
+mongoose.plugin(mongoosePlugin);
 
 // Schema Definition
 const ZBlog = z.object({
@@ -17,41 +21,38 @@ const blogSchema = zodSchema(ZBlog);
 export const Blog = mongoose.model('Blog', blogSchema);
 
 // Type definition
-export type BlogType = z.infer<typeof ZBlog>;
+export type BlogType = z.infer<typeof ZBlog> & {
+  _id: mongoose.Types.ObjectId;
+};
 
 interface PaginationResult {
   items: BlogType[];
   nextCursor: string | null;
+  previousCursor: string | null;
+  hasPrevious: boolean;
+  hasNext: boolean;
 }
-
-// Blog functions
-export const createBlog = (blogData: Omit<BlogType, 'createdAt'>) =>
-  Blog.create(blogData);
 
 export const listBlogsWithCursor = async (
   cursor: string | null = null,
   limit = 2,
 ): Promise<PaginationResult> => {
-  const query = cursor
-    ? {
-        createdAt: { $lt: new Date(cursor) },
-      }
-    : {};
-
-  const items = await Blog.find(query)
-    .sort({ createdAt: -1 })
-    .limit(limit + 1)
-    .select('-__v')
-    .lean();
-
-  const hasMore = items.length > limit;
-  const paginatedItems = hasMore ? items.slice(0, -1) : items;
+  // @ts-expect-error: paginate is added by the plugin
+  const result = await Blog.paginate({
+    query: {},
+    limit,
+    sortAscending: false,
+    paginatedField: 'createdAt',
+    sortField: '_id',
+    next: cursor || undefined,
+  });
 
   return {
-    items: paginatedItems,
-    nextCursor: hasMore
-      ? items[items.length - 2].createdAt.toISOString()
-      : null,
+    items: result.results as BlogType[],
+    nextCursor: result.next || null,
+    previousCursor: result.previous || null,
+    hasPrevious: result.hasPrevious,
+    hasNext: result.hasNext,
   };
 };
 
@@ -65,7 +66,7 @@ const runPaginationDemo = async () => {
 
     // Create 10 blog posts with slight delays to ensure different timestamps
     for (let i = 0; i < 10; i++) {
-      await createBlog({
+      await Blog.create({
         title: `Blog Post ${i + 1}`,
         content: `This is the content for blog post ${i + 1}. It contains enough characters to meet the minimum requirement.`,
         tags: [`tag${i + 1}`, 'common'],
@@ -74,21 +75,23 @@ const runPaginationDemo = async () => {
       await new Promise((resolve) => setTimeout(resolve, 100));
     }
 
-    console.log(
-      '\nCreated %d Blog Posts',
-      (await listBlogsWithCursor(null, 10)).items.length,
-    );
+    console.log('\nCreated 10 Blog Posts');
 
     // Demonstrate cursor-based pagination
     let currentCursor: string | null = null;
     let pageNum = 1;
 
     do {
-      const { items, nextCursor } = await listBlogsWithCursor(currentCursor);
+      const { items, nextCursor, hasNext } =
+        await listBlogsWithCursor(currentCursor);
       console.log(`\nPage ${pageNum} (2 items per page):`);
       console.log(
         JSON.stringify(
-          items.map((post) => post.title),
+          items.map((post) => ({
+            title: post.title,
+            createdAt: post.createdAt,
+            _id: post._id,
+          })),
           null,
           2,
         ),
@@ -96,6 +99,7 @@ const runPaginationDemo = async () => {
 
       currentCursor = nextCursor;
       pageNum++;
+      if (!hasNext) break;
     } while (currentCursor !== null);
 
     // Clean up collection
