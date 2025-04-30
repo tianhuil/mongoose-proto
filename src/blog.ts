@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { extendZod, zodSchema } from '@zodyac/zod-mongoose';
+import { extendZod, zId, zodSchema } from '@zodyac/zod-mongoose';
 import mongoose from 'mongoose';
 
 extendZod(z);
@@ -15,11 +15,7 @@ const ZAuthor = z.object({
 const ZPost = z.object({
   title: z.string().min(3).max(255),
   content: z.string().min(10),
-  author: z
-    .instanceof(mongoose.Types.ObjectId)
-    .refine((val) => val instanceof mongoose.Types.ObjectId, {
-      message: 'Invalid ObjectId',
-    }),
+  author: zId('Author'),
   published: z.boolean().default(false),
   createdAt: z.date().default(() => new Date()),
   updatedAt: z.date().default(() => new Date()),
