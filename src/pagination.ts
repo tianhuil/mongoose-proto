@@ -25,37 +25,6 @@ export type BlogType = z.infer<typeof ZBlog> & {
   _id: mongoose.Types.ObjectId;
 };
 
-interface PaginationResult {
-  items: BlogType[];
-  nextCursor: string | null;
-  previousCursor: string | null;
-  hasPrevious: boolean;
-  hasNext: boolean;
-}
-
-export const listBlogsWithCursor = async (
-  cursor: string | null = null,
-  limit = 2,
-): Promise<PaginationResult> => {
-  // @ts-expect-error: paginate is added by the plugin
-  const result = await Blog.paginate({
-    query: {},
-    limit,
-    sortAscending: false,
-    paginatedField: 'createdAt',
-    sortField: '_id',
-    next: cursor || undefined,
-  });
-
-  return {
-    items: result.results as BlogType[],
-    nextCursor: result.next || null,
-    previousCursor: result.previous || null,
-    hasPrevious: result.hasPrevious,
-    hasNext: result.hasNext,
-  };
-};
-
 // Demo/test code
 const runPaginationDemo = async () => {
   try {
@@ -80,14 +49,23 @@ const runPaginationDemo = async () => {
     // Demonstrate cursor-based pagination
     let currentCursor: string | null = null;
     let pageNum = 1;
+    const limit = 2;
 
     do {
-      const { items, nextCursor, hasNext } =
-        await listBlogsWithCursor(currentCursor);
-      console.log(`\nPage ${pageNum} (2 items per page):`);
+      // @ts-expect-error: paginate is added by the plugin
+      const { results, next, hasNext } = await Blog.paginate({
+        query: {},
+        limit,
+        sortAscending: false,
+        paginatedField: 'createdAt',
+        sortField: '_id',
+        next: currentCursor || undefined,
+      });
+
+      console.log(`\nPage ${pageNum} (${limit} items per page):`);
       console.log(
         JSON.stringify(
-          items.map((post) => ({
+          results.map((post: BlogType) => ({
             title: post.title,
             createdAt: post.createdAt,
             _id: post._id,
@@ -97,7 +75,7 @@ const runPaginationDemo = async () => {
         ),
       );
 
-      currentCursor = nextCursor;
+      currentCursor = next;
       pageNum++;
       if (!hasNext) break;
     } while (currentCursor !== null);
