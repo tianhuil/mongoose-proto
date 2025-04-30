@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { extendZod, zodSchema } from '@zodyac/zod-mongoose';
-import mongoose from 'mongoose';
+import mongoose, { type InferSchemaType } from 'mongoose';
 import mongoosePaginate from 'mongoose-paginate-v2';
 
 extendZod(z);
@@ -23,8 +23,8 @@ const blogSchema = zodSchema(ZBlog);
 blogSchema.plugin(mongoosePaginate);
 
 export const BlogModel = mongoose.model<
-  z.infer<typeof ZBlog>,
-  mongoose.PaginateModel<z.infer<typeof ZBlog>>
+  InferSchemaType<typeof blogSchema>,
+  mongoose.PaginateModel<InferSchemaType<typeof blogSchema>>
 >('Blog', blogSchema);
 
 // Demo/test code
