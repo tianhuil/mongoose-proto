@@ -78,7 +78,7 @@ const main = async () => {
     console.log('Created user:', newUser);
 
     // Query users
-    const users = await userModel.find({ age: { $gte: 18 } });
+    const users = await userModel.find({ name: { $regex: 'John' } });
     console.log('Adult users:', users);
   } catch (error) {
     console.error('Error:', error);
