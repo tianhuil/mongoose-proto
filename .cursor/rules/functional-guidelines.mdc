@@ -1,0 +1,70 @@
+---
+description: "Functional Guidelines"
+globs: "*.ts,*.tsx,*.js,*.jsx"
+alwaysApply: true
+---
+
+# Functional Guidelines
+
+## Core Principal
+
+Prefer functional code.  When combined with strong type-safety, it greatly reduces errors.
+
+## Prefer functional methods like `map`, `flatMap`, or `filter` to `while` or `for` loops
+
+```ts
+// ✅ Correct
+const names = allUsers.map(user => user.name)
+
+// ❌ Incorrect
+const names = []
+for (const user of allUsers) {
+  names.push(user.name)
+}
+
+// ✅ Correct
+const allPosts = allUsers.filter(user => user.isActive).flatMap(user => user.posts)
+
+// ❌ Incorrect
+const posts = []
+for (const user of allUsers) {
+  if (user.isActive) {
+    posts.push(...user.posts)
+  }
+}
+```
+
+## Prefer immutable to mutable
+
+```ts
+// ✅ Correct
+const user = getUser()
+
+// ❌ Incorrect
+let user = getUser()
+
+// ✅ Correct
+const allUsers = [...oldUsers, newUser]
+
+// ❌ Incorrect
+oldUsers.push(newUser)
+```
+
+## Prefer ternary operator to mutating with `let`
+
+```ts
+// ✅ Correct
+const x = y === 1 ? 2 : 3
+
+// ❌ Incorrect
+// ✅ Correct
+const x = y === 1 ? 2 : 3
+
+// ❌ Incorrect
+let x = 2
+if (y === 1) {
+  x = 2
+} else {
+  x = 3
+}
+```

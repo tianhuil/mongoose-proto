@@ -1,0 +1,38 @@
+---
+description: "Naming Convention Guidelines"
+globs: "*.ts,*.tsx,*.js,*.jsx"
+alwaysApply: true
+---
+
+# Naming Convention Guidelines
+
+## Use basic naming convention
+
+```ts
+// ✅ Correct
+const camelCase = 2 // values are camel case
+class PascalCase { // classes are Pascal case
+  // ...
+}
+
+// types and interfaces are Pascal case as well
+type PascalCaseType = // ...
+interface PascalCaseInterface {}
+```
+
+## Use `Z*` for zod objects and associated types
+
+```ts
+// ✅ Correct
+const ZName = z.union( ... )
+const ZName = z.infer<typeof ZName>
+```
+
+## Use naming convention for unstated-next hooks
+
+```ts
+// ✅ Correct
+const useCorps = () => { ... }
+const CorpsState = createContainer(useCorps)
+const type UseCorps = typeof useCorps
+```

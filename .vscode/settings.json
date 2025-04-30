@@ -1,0 +1,11 @@
+{
+  "editor.formatOnSave": true,
+  "[javascript][typescript][json][javascriptreact][typescriptreact]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true,
+  "files.associations": {
+    "*.gs": "javascript"
+  }
+}
