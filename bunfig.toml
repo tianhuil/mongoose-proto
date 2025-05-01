@@ -1,0 +1,3 @@
+[install]
+# Project specific completions
+completions = true
