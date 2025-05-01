@@ -16,7 +16,6 @@ interface AbstractOperations {
   setupData(): Promise<void>;
   runQuery(): Promise<number>;
   cleanup(): Promise<void>;
-  disconnect(): Promise<void>;
 }
 
 export class PrismaOperations implements AbstractOperations {
@@ -84,14 +83,11 @@ export class PrismaOperations implements AbstractOperations {
     try {
       await prisma.post.deleteMany();
       await prisma.author.deleteMany();
+      await prisma.$disconnect();
     } catch (error) {
       console.error('Error cleaning up Prisma data:', error);
       throw error;
     }
-  }
-
-  async disconnect(): Promise<void> {
-    await prisma.$disconnect();
   }
 }
 
@@ -154,14 +150,11 @@ export class MongooseOperations implements AbstractOperations {
     try {
       await Post.deleteMany({});
       await Author.deleteMany({});
+      await mongoose.disconnect();
     } catch (error) {
       console.error('Error cleaning up Mongoose data:', error);
       throw error;
     }
-  }
-
-  async disconnect(): Promise<void> {
-    await mongoose.disconnect();
   }
 }
 
@@ -205,9 +198,6 @@ const run = async (operations: AbstractOperations[]): Promise<void> => {
     console.log('\nCleanup complete');
   } catch (error) {
     console.error('Error:', error);
-  } finally {
-    await Promise.all(operations.map((op) => op.disconnect()));
-    console.log('\nDisconnected from databases');
   }
 };
 
