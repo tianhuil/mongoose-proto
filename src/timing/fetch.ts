@@ -1,7 +1,7 @@
 import { prisma } from '../lib/prisma';
 import { Author, Post } from '../populate';
 import mongoose from 'mongoose';
-import { TimingSamples } from '../lib/stats';
+import { TimingSamples } from './stats';
 
 const ITERATIONS = 20;
 const DELAY_MS = 50;
