@@ -6,15 +6,15 @@ extendZod(z);
 
 // Schema Definitions
 const ZAuthor = z.object({
-  name: z.string().min(2).max(100),
+  name: z.string(),
   email: z.string().email(),
   bio: z.string().optional(),
   createdAt: z.date().default(() => new Date()),
 });
 
 const ZPost = z.object({
-  title: z.string().min(3).max(255),
-  content: z.string().min(10),
+  title: z.string(),
+  content: z.string(),
   author: zId('Author'),
   published: z.boolean().default(false),
   createdAt: z.date().default(() => new Date()),
@@ -25,11 +25,20 @@ const ZPost = z.object({
 const authorSchema = zodSchema(ZAuthor);
 const postSchema = zodSchema(ZPost);
 
+// Add virtual posts field to Author
+authorSchema.virtual('posts', {
+  ref: 'Post',
+  localField: '_id',
+  foreignField: 'author',
+});
+
 export const Author = mongoose.model('Author', authorSchema);
 export const Post = mongoose.model('Post', postSchema);
 
 // Type definitions
-export type AuthorType = z.infer<typeof ZAuthor>;
+export type AuthorType = z.infer<typeof ZAuthor> & {
+  posts?: PostType[];
+};
 export type PostType = z.infer<typeof ZPost>;
 export type PopulatedPostType = Omit<PostType, 'author'> & {
   author: AuthorType;

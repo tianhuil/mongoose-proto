@@ -16,9 +16,9 @@ datasource db {
 
 model Author {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  name      String
-  email     String   @unique
-  bio       String?
+  name      String   @db.String()
+  email     String
+  bio       String?  @db.String()
   createdAt DateTime @default(now())
   posts     Post[]
 
@@ -27,8 +27,8 @@ model Author {
 
 model Post {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  title     String
-  content   String
+  title     String   @db.String()
+  content   String   @db.String()
   published Boolean  @default(false)
   author    Author   @relation(fields: [authorId], references: [id])
   authorId  String   @db.ObjectId
