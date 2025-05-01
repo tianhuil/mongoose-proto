@@ -101,7 +101,7 @@ export class MongooseOperations implements AbstractOperations {
   async setupData(): Promise<void> {
     try {
       const mongoUrl =
-        process.env.MONGO_URL || 'mongodb://localhost:27017/blog';
+        process.env.MONGOOSE_MONGO_URL || 'mongodb://localhost:27017/blog';
       await mongoose.connect(mongoUrl);
 
       await Promise.all([
