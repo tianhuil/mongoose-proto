@@ -4,7 +4,7 @@ import mongoose from 'mongoose';
 import { TimingSamples } from '../lib/stats';
 
 const ITERATIONS = 20;
-const DELAY_MS = 100;
+const DELAY_MS = 50;
 const NUM_POSTS = 10;
 const NUM_AUTHORS = 2;
 const WARMUP_ITERATIONS = 3;
