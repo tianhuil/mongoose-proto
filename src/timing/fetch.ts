@@ -1,5 +1,5 @@
-import { prisma } from '../lib/prisma';
-import { Author, Post } from '../populate';
+import { prisma } from '@/lib/prisma';
+import { Author, Post } from '@/populate';
 import mongoose from 'mongoose';
 import { TimingSamples } from './stats';
 
