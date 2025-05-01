@@ -6,10 +6,16 @@
     "start": "bun run src/index.ts",
     "dev": "bun --watch run src/index.ts",
     "build": "tsc",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "prisma:generate": "prisma generate",
+    "prisma:push": "prisma db push",
+    "prisma:studio": "prisma studio",
+    "prisma:format": "prisma format"
   },
   "devDependencies": {
+    "@prisma/client": "^6.7.0",
     "@types/node": "^22.15.3",
+    "prisma": "^6.7.0",
     "typescript": "^5.8.3"
   },
   "dependencies": {
