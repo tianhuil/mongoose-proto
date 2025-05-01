@@ -88,13 +88,12 @@ export class PrismaOperations {
 
 // biome-ignore lint/complexity/noStaticOnlyClass: <explanation>
 export class MongooseOperations {
-  static async connect(): Promise<void> {
-    const mongoUrl = process.env.MONGO_URL || 'mongodb://localhost:27017/blog';
-    await mongoose.connect(mongoUrl);
-  }
-
   static async setupData(): Promise<void> {
     try {
+      const mongoUrl =
+        process.env.MONGO_URL || 'mongodb://localhost:27017/blog';
+      await mongoose.connect(mongoUrl);
+
       await Promise.all([
         Post.collection.createIndex({ createdAt: -1 }),
         Post.collection.createIndex({ published: 1 }),
@@ -168,7 +167,6 @@ const warmupQueries = async (): Promise<void> => {
 
 const run = async (): Promise<void> => {
   try {
-    await MongooseOperations.connect();
     await PrismaOperations.setupData();
     await MongooseOperations.setupData();
     console.log('Data setup complete');
