@@ -17,10 +17,12 @@ datasource db {
 model Author {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   name      String
-  email     String
+  email     String   @unique
   bio       String?
   createdAt DateTime @default(now())
   posts     Post[]
+
+  @@index([email])
 }
 
 model Post {
@@ -32,4 +34,7 @@ model Post {
   authorId  String   @db.ObjectId
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([createdAt(sort: Desc)])
+  @@index([published])
 }

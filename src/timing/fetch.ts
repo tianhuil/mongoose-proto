@@ -1,7 +1,8 @@
 import { prisma } from '@/lib/prisma';
-import { Author, Post } from '@/populate';
+import { Author, Post } from './mongoose';
 import mongoose from 'mongoose';
 import { TimingSamples } from './stats';
+import { setupMongoose } from './mongoose';
 
 const ITERATIONS = 20;
 const DELAY_MS = 50;
@@ -96,15 +97,7 @@ export class MongooseOperations implements AbstractOperations {
 
   async setupData(): Promise<void> {
     try {
-      const mongoUrl =
-        process.env.MONGOOSE_MONGO_URL || 'mongodb://localhost:27017/blog';
-      await mongoose.connect(mongoUrl);
-
-      await Promise.all([
-        Post.collection.createIndex({ createdAt: -1 }),
-        Post.collection.createIndex({ published: 1 }),
-        Author.collection.createIndex({ email: 1 }, { unique: true }),
-      ]);
+      await setupMongoose(process.env.MONGOOSE_MONGO_URL);
 
       const authors = await Promise.all(
         Array.from({ length: NUM_AUTHORS }, (_, i) =>
