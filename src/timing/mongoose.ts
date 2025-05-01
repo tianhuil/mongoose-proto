@@ -7,7 +7,7 @@ extendZod(z);
 // Schema Definitions
 const ZAuthor = z.object({
   name: z.string(),
-  email: z.string().email(),
+  email: z.string(),
   bio: z.string().optional(),
   createdAt: z.date().default(() => new Date()),
 });
