@@ -11,9 +11,18 @@ const WARMUP_ITERATIONS = 3;
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-// biome-ignore lint/complexity/noStaticOnlyClass: <explanation>
-export class PrismaOperations {
-  static async setupData(): Promise<void> {
+interface AbstractOperations {
+  readonly name: string;
+  setupData(): Promise<void>;
+  runQuery(): Promise<number>;
+  cleanup(): Promise<void>;
+  disconnect(): Promise<void>;
+}
+
+export class PrismaOperations implements AbstractOperations {
+  public readonly name = 'Prisma';
+
+  async setupData(): Promise<void> {
     try {
       const authors = await Promise.all(
         Array.from({ length: NUM_AUTHORS }, (_, i) =>
@@ -45,7 +54,7 @@ export class PrismaOperations {
     }
   }
 
-  static async runQuery(): Promise<number> {
+  async runQuery(): Promise<number> {
     try {
       const start = performance.now();
       await prisma.post.findMany({
@@ -71,7 +80,7 @@ export class PrismaOperations {
     }
   }
 
-  static async cleanup(): Promise<void> {
+  async cleanup(): Promise<void> {
     try {
       await prisma.post.deleteMany();
       await prisma.author.deleteMany();
@@ -81,14 +90,15 @@ export class PrismaOperations {
     }
   }
 
-  static async disconnect(): Promise<void> {
+  async disconnect(): Promise<void> {
     await prisma.$disconnect();
   }
 }
 
-// biome-ignore lint/complexity/noStaticOnlyClass: <explanation>
-export class MongooseOperations {
-  static async setupData(): Promise<void> {
+export class MongooseOperations implements AbstractOperations {
+  public readonly name = 'Mongoose';
+
+  async setupData(): Promise<void> {
     try {
       const mongoUrl =
         process.env.MONGO_URL || 'mongodb://localhost:27017/blog';
@@ -126,7 +136,7 @@ export class MongooseOperations {
     }
   }
 
-  static async runQuery(): Promise<number> {
+  async runQuery(): Promise<number> {
     try {
       const start = performance.now();
       await Post.find({ published: true })
@@ -140,7 +150,7 @@ export class MongooseOperations {
     }
   }
 
-  static async cleanup(): Promise<void> {
+  async cleanup(): Promise<void> {
     try {
       await Post.deleteMany({});
       await Author.deleteMany({});
@@ -150,60 +160,57 @@ export class MongooseOperations {
     }
   }
 
-  static async disconnect(): Promise<void> {
+  async disconnect(): Promise<void> {
     await mongoose.disconnect();
   }
 }
 
-const warmupQueries = async (): Promise<void> => {
-  console.log('Warming up connections...');
-  for (let i = 0; i < WARMUP_ITERATIONS; i++) {
-    await PrismaOperations.runQuery();
-    await MongooseOperations.runQuery();
-    await delay(50);
-  }
-  console.log('Warmup complete');
-};
-
-const run = async (): Promise<void> => {
+const run = async (operations: AbstractOperations[]): Promise<void> => {
   try {
-    await PrismaOperations.setupData();
-    await MongooseOperations.setupData();
+    // Setup all operations
+    await Promise.all(operations.map((op) => op.setupData()));
     console.log('Data setup complete');
 
-    await warmupQueries();
+    console.log('Warming up connections...');
+    for (let i = 0; i < WARMUP_ITERATIONS; i++) {
+      for (const op of operations) {
+        await op.runQuery();
+        await delay(DELAY_MS);
+      }
+    }
+    console.log('Warmup complete');
 
-    const prismaTiming = new TimingSamples();
-    const mongooseTiming = new TimingSamples();
+    const timings = new Map<string, TimingSamples>();
+    for (const op of operations) {
+      timings.set(op.name, new TimingSamples());
+    }
 
     for (let i = 0; i < ITERATIONS; i++) {
       console.log(`\nIteration ${i + 1}/${ITERATIONS}`);
 
-      const prismaTime = await PrismaOperations.runQuery();
-      prismaTiming.add(prismaTime);
-      await delay(DELAY_MS);
-
-      const mongooseTime = await MongooseOperations.runQuery();
-      mongooseTiming.add(mongooseTime);
-      await delay(DELAY_MS);
+      for (const op of operations) {
+        const time = await op.runQuery();
+        timings.get(op.name)?.add(time);
+        await delay(DELAY_MS);
+      }
     }
 
     console.log('\nResults:');
-    console.log('Prisma:', prismaTiming.summary);
-    console.log('Mongoose:', mongooseTiming.summary);
+    for (const [name, timing] of timings) {
+      console.log(`${name}:`, timing.summary);
+    }
 
-    await PrismaOperations.cleanup();
-    await MongooseOperations.cleanup();
+    // Cleanup all operations
+    await Promise.all(operations.map((op) => op.cleanup()));
     console.log('\nCleanup complete');
   } catch (error) {
     console.error('Error:', error);
   } finally {
-    await MongooseOperations.disconnect();
-    await PrismaOperations.disconnect();
+    await Promise.all(operations.map((op) => op.disconnect()));
     console.log('\nDisconnected from databases');
   }
 };
 
 if (require.main === module) {
-  run().catch(console.error);
+  run([new PrismaOperations(), new MongooseOperations()]).catch(console.error);
 }
