@@ -8,7 +8,7 @@ These results were obtained against a free AtlasDB server.
 
 ### Create
 
-Create in Prisma is very slow.  We can speed it up by using `createMany([{}])` on a single object because it doesn't return the created object (only the count).
+Create in Prisma is 2-3 times slower.  We can speed it up by using `createMany([{}])` on a single object because it doesn't return the created object (only the count).  This is true even if we only return the `id` field.
 
 ```txt
 Prisma (create)               : mean: 50.23ms ± 2.15ms SE (min: 32.72ms, max: 71.76ms, n=20)
@@ -24,7 +24,8 @@ Mongoose (read)               : mean: 32.44ms ± 1.82ms SE (min: 21.99ms, max: 4
 ```
 
 ### Update
-Same logic as created but with worse results.
+
+Same logic as "create".
 
 ```txt
 Prisma (update)               : mean: 73.44ms ± 1.50ms SE (min: 61.55ms, max: 88.47ms, n=20)

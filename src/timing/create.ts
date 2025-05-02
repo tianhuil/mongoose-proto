@@ -40,6 +40,9 @@ class PrismaCreateOperations implements AbstractOperations {
           published: true,
           authorId: this.authorId,
         },
+        select: {
+          id: true,
+        },
       });
       return performance.now() - start;
     } catch (error) {

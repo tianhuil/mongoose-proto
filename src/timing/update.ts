@@ -39,6 +39,9 @@ class PrismaUpdateOperations implements AbstractOperations {
         data: {
           bio: `Updated bio ${Math.random()}`,
         },
+        select: {
+          id: true,
+        },
       });
       return performance.now() - start;
     } catch (error) {
