@@ -13,9 +13,9 @@ export interface AbstractOperations {
   cleanup(): Promise<void>;
 }
 
-export class PrismaOperations implements AbstractOperations {
-  public readonly name = 'Prisma';
-  private authorId: string | null = null;
+class PrismaCreateOperations implements AbstractOperations {
+  public readonly name: string = 'Prisma';
+  protected authorId: string | null = null;
 
   async setupData(): Promise<void> {
     try {
@@ -68,7 +68,28 @@ export class PrismaOperations implements AbstractOperations {
   }
 }
 
-export class MongooseOperations implements AbstractOperations {
+class PrismaCreateManyOperations extends PrismaCreateOperations {
+  public readonly name = 'Prisma (createMany)';
+
+  async runQuery(): Promise<number> {
+    const start = performance.now();
+    await prisma.post.createMany({
+      data: [
+        {
+          title: 'Test Post',
+          content:
+            'This is a test post with sufficient content to meet minimum requirements...',
+          published: true,
+          // biome-ignore lint/style/noNonNullAssertion: <explanation>
+          authorId: this.authorId!,
+        },
+      ],
+    });
+    return performance.now() - start;
+  }
+}
+
+class MongooseOperations implements AbstractOperations {
   public readonly name = 'Mongoose';
   private authorId: string | null = null;
 
@@ -121,5 +142,9 @@ export class MongooseOperations implements AbstractOperations {
 }
 
 if (require.main === module) {
-  run([new PrismaOperations(), new MongooseOperations()]).catch(console.error);
+  run([
+    new PrismaCreateOperations(),
+    new PrismaCreateManyOperations(),
+    new MongooseOperations(),
+  ]).catch(console.error);
 }
