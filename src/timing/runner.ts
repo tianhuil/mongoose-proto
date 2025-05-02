@@ -1,4 +1,4 @@
-import type { AbstractOperations } from './read';
+import type { AbstractOperations } from './base';
 import { TimingSamples } from './stats';
 
 export const ITERATIONS = 20;

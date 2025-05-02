@@ -3,15 +3,7 @@ import { Author, Post } from './mongoose';
 import mongoose from 'mongoose';
 import { setupMongoose } from './mongoose';
 import { run } from './runner';
-
-const NUM_POSTS = 10;
-
-export interface AbstractOperations {
-  readonly name: string;
-  setupData(): Promise<void>;
-  runQuery(): Promise<number>;
-  cleanup(): Promise<void>;
-}
+import type { AbstractOperations } from './base';
 
 class PrismaCreateOperations implements AbstractOperations {
   public readonly name: string = 'Prisma';
