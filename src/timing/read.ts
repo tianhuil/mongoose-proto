@@ -1,9 +1,9 @@
 import { prisma } from '@/lib/prisma';
-import { Author, Post } from './mongoose';
+import { Author, Post } from './lib/mongoose';
 import mongoose from 'mongoose';
-import { setupMongoose } from './mongoose';
-import { run } from './runner';
-import { NUM_AUTHORS, NUM_POSTS, type AbstractOperations } from './base';
+import { setupMongoose } from './lib/mongoose';
+import { run } from './lib/runner';
+import { NUM_AUTHORS, NUM_POSTS, type AbstractOperations } from './lib/base';
 
 export class PrismaOperations implements AbstractOperations {
   public readonly name = 'Prisma';
