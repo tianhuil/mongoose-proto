@@ -2,7 +2,7 @@ import { prisma } from '@/lib/prisma';
 import { Author, Post } from './lib/mongoose';
 import mongoose from 'mongoose';
 import { setupMongoose } from './lib/mongoose';
-import { run } from './lib/runner';
+import { run } from './lib/run';
 import { NUM_AUTHORS, NUM_POSTS, type AbstractOperations } from './lib/base';
 
 export class PrismaOperations implements AbstractOperations {
