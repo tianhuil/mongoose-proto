@@ -48,15 +48,6 @@ export class PrismaOperations implements AbstractOperations {
           published: true,
           authorId: this.authorId,
         },
-        include: {
-          author: {
-            select: {
-              name: true,
-              email: true,
-              bio: true,
-            },
-          },
-        },
       });
       return performance.now() - start;
     } catch (error) {
