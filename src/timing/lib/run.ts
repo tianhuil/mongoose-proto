@@ -42,7 +42,7 @@ export const run = async (operations: AbstractOperations[]): Promise<void> => {
 
     console.log('\nResults:');
     for (const [name, timing] of timings) {
-      console.log(`${name}:`, timing.summary);
+      console.log(`${name.padEnd(30)}:`, timing.summary);
     }
   } catch (error) {
     console.error('Error:', error);
