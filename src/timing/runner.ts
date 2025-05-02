@@ -41,11 +41,10 @@ export const run = async (operations: AbstractOperations[]): Promise<void> => {
     for (const [name, timing] of timings) {
       console.log(`${name}:`, timing.summary);
     }
-
-    // Cleanup all operations
-    await Promise.all(operations.map((op) => op.cleanup()));
-    console.log('\nCleanup complete');
   } catch (error) {
     console.error('Error:', error);
+  } finally {
+    await Promise.all(operations.map((op) => op.cleanup()));
+    console.log('\nCleanup complete');
   }
 };
