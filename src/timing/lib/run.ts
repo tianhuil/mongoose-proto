@@ -35,6 +35,7 @@ export const run = async (operations: AbstractOperations[]): Promise<void> => {
       for (const op of operations) {
         const time = await op.runQuery();
         timings.get(op.name)?.add(time);
+        // Single thread and delay to avoid CPU contention
         await delay(DELAY_MS);
       }
     }
