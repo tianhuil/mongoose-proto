@@ -22,7 +22,7 @@ class PrismaCreateOperations implements AbstractOperations {
       const author = await prisma.author.create({
         data: {
           name: 'Test Author',
-          email: 'test.author@example.com',
+          email: `test.author${Math.random()}@example.com`,
           bio: 'Bio for test author',
         },
       });
