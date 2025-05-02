@@ -30,6 +30,8 @@ export const run = async (operations: AbstractOperations[]): Promise<void> => {
     for (let i = 0; i < ITERATIONS; i++) {
       console.log(`\nIteration ${i + 1}/${ITERATIONS}`);
 
+      // interleave operations so that anything affecting timing affects all
+      // operations more equally
       for (const op of operations) {
         const time = await op.runQuery();
         timings.get(op.name)?.add(time);
