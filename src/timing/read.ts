@@ -1,18 +1,13 @@
 import { prisma } from '@/lib/prisma';
 import { Author, Post } from './mongoose';
 import mongoose from 'mongoose';
-import { TimingSamples } from './stats';
 import { setupMongoose } from './mongoose';
+import { run } from './runner';
 
-const ITERATIONS = 20;
-const DELAY_MS = 50;
 const NUM_POSTS = 10;
 const NUM_AUTHORS = 2;
-const WARMUP_ITERATIONS = 3;
 
-const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
-interface AbstractOperations {
+export interface AbstractOperations {
   readonly name: string;
   setupData(): Promise<void>;
   runQuery(): Promise<number>;
@@ -150,49 +145,6 @@ export class MongooseOperations implements AbstractOperations {
     }
   }
 }
-
-const run = async (operations: AbstractOperations[]): Promise<void> => {
-  try {
-    // Setup all operations
-    await Promise.all(operations.map((op) => op.setupData()));
-    console.log('Data setup complete');
-
-    console.log('Warming up connections...');
-    for (let i = 0; i < WARMUP_ITERATIONS; i++) {
-      for (const op of operations) {
-        await op.runQuery();
-        await delay(DELAY_MS);
-      }
-    }
-    console.log('Warmup complete');
-
-    const timings = new Map<string, TimingSamples>();
-    for (const op of operations) {
-      timings.set(op.name, new TimingSamples());
-    }
-
-    for (let i = 0; i < ITERATIONS; i++) {
-      console.log(`\nIteration ${i + 1}/${ITERATIONS}`);
-
-      for (const op of operations) {
-        const time = await op.runQuery();
-        timings.get(op.name)?.add(time);
-        await delay(DELAY_MS);
-      }
-    }
-
-    console.log('\nResults:');
-    for (const [name, timing] of timings) {
-      console.log(`${name}:`, timing.summary);
-    }
-
-    // Cleanup all operations
-    await Promise.all(operations.map((op) => op.cleanup()));
-    console.log('\nCleanup complete');
-  } catch (error) {
-    console.error('Error:', error);
-  }
-};
 
 if (require.main === module) {
   run([new PrismaOperations(), new MongooseOperations()]).catch(console.error);
