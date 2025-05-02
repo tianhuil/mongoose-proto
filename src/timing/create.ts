@@ -6,7 +6,7 @@ import { run } from './lib/run';
 import type { AbstractOperations } from './lib/base';
 
 class PrismaCreateOperations implements AbstractOperations {
-  public readonly name: string = 'Prisma';
+  public readonly name: string = 'Prisma (create)';
   protected authorId: string | null = null;
 
   async setupData(): Promise<void> {
@@ -82,7 +82,7 @@ class PrismaCreateManyOperations extends PrismaCreateOperations {
 }
 
 class MongooseOperations implements AbstractOperations {
-  public readonly name = 'Mongoose';
+  public readonly name = 'Mongoose (create)';
   private authorId: string | null = null;
 
   async setupData(): Promise<void> {

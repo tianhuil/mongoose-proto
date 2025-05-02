@@ -6,7 +6,7 @@ import { run } from './lib/run';
 import { NUM_AUTHORS, NUM_POSTS, type AbstractOperations } from './lib/base';
 
 export class PrismaOperations implements AbstractOperations {
-  public readonly name = 'Prisma';
+  public readonly name = 'Prisma (read)';
 
   async setupData(): Promise<void> {
     try {
@@ -79,7 +79,7 @@ export class PrismaOperations implements AbstractOperations {
 }
 
 export class MongooseOperations implements AbstractOperations {
-  public readonly name = 'Mongoose';
+  public readonly name = 'Mongoose (read)';
 
   async setupData(): Promise<void> {
     try {
