@@ -1,5 +1,6 @@
 # Mongoose TypeScript Prototype
-Benchmarking Mongoose against Prisma Mongo performance.
+
+Benchmarking Mongoose against Prisma Mongo performance.  They use matching schemas with identical indexes.
 
 ## Results
 
@@ -23,6 +24,7 @@ Mongoose (read)               : mean: 32.44ms ± 1.82ms SE (min: 21.99ms, max: 4
 ```
 
 ### Update
+Same logic as created but with worse results.
 
 ```txt
 Prisma (update)               : mean: 73.44ms ± 1.50ms SE (min: 61.55ms, max: 88.47ms, n=20)
