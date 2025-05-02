@@ -1,11 +1,11 @@
-import type { AbstractOperations } from './base';
+import {
+  delay,
+  DELAY_MS,
+  ITERATIONS,
+  WARMUP_ITERATIONS,
+  type AbstractOperations,
+} from './base';
 import { TimingSamples } from './stats';
-
-export const ITERATIONS = 20;
-export const DELAY_MS = 50;
-export const WARMUP_ITERATIONS = 3;
-
-const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export const run = async (operations: AbstractOperations[]): Promise<void> => {
   try {
